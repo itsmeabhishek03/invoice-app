@@ -26,7 +26,7 @@ type Invoice = {
   items: LineItem[];
 };
 
-export default function EditInvoicePage({ params }: { params: { id: string } }) {
+export default function EditInvoiceForm({ invoiceId }: { invoiceId: string }) {
  // eslint-disable-next-line @typescript-eslint/no-unused-vars
  const { companyName, logoBase64 } = useProfile();
   const router = useRouter();
@@ -41,7 +41,7 @@ export default function EditInvoicePage({ params }: { params: { id: string } }) 
 
   // Fetch invoice
   useEffect(() => {
-    fetch(`/api/invoices/${params.id}`)
+    fetch(`/api/invoices/${invoiceId}`)
       .then((res) => res.json())
       .then((data: Invoice) => {
         setInvoice(data);
@@ -54,7 +54,7 @@ export default function EditInvoicePage({ params }: { params: { id: string } }) 
         );
       })
       .finally(() => setLoading(false));
-  }, [params.id]);
+  }, [invoiceId]);
 
   if (loading) return <p className="p-8">Loading…</p>;
   if (!invoice) return <p className="p-8">Invoice not found.</p>;
@@ -102,7 +102,7 @@ export default function EditInvoicePage({ params }: { params: { id: string } }) 
   // Delete
   async function onDelete() {
     if (!confirm('Delete this invoice?')) return;
-    const res = await fetch(`/api/invoices/${params.id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/invoices/${invoiceId}`, { method: 'DELETE' });
     if (res.ok) {
       router.push('/invoices');
     } else {
