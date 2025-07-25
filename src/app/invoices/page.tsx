@@ -49,7 +49,7 @@ export default function InvoicesPage() {
                 <td className="p-2">{inv.invoiceNumber}</td>
                 <td className="p-2">{inv.clientName}</td>
                 <td className="p-2 text-center">{inv.issueDate}</td>
-                <td className="p-2 text-right">{inv.total.toFixed(2)}</td>
+                <td className="p-2 text-right">{inv.total}</td>
                 <td className="p-2 text-center">
                   <Link href={`/invoices/${inv._id}/edit`} className="underline">
                     Edit
