@@ -1,4 +1,4 @@
-// List all invoices (GET) & create/update invoice (POST)
+// src/app/api/invoices/route.ts
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/route';
@@ -18,11 +18,25 @@ export async function GET() {
     .sort({ createdAt: -1 })
     .toArray();
 
-  const safe = invoices.map((inv) => {
-    const { _id, ...rest } = inv;
-    return { _id: _id.toString(), ...rest };
-  });
-  return NextResponse.json(safe);
+  return NextResponse.json(
+    invoices.map(inv => ({
+      _id: inv._id.toString(),
+      clientName: inv.clientName,
+      clientEmail: inv.clientEmail,
+      invoiceNumber: inv.invoiceNumber,
+      issueDate: inv.issueDate,
+      dueDate: inv.dueDate,
+      notes: inv.notes,
+      items: inv.items,
+      subtotal: inv.subtotal,
+      totalTax: inv.totalTax,
+      total: inv.total,
+      companyName: inv.companyName,
+      logoBase64: inv.logoBase64,
+      createdAt: inv.createdAt,
+      updatedAt: inv.updatedAt
+    }))
+  );
 }
 
 export async function POST(req: Request) {
@@ -35,24 +49,56 @@ export async function POST(req: Request) {
   const coll = client.db().collection('invoices');
   const now = new Date().toISOString();
 
+  const compute = (items: any[]) => {
+    const subtotal = items.reduce((sum, it) => sum + it.quantity * it.rate, 0);
+    const totalTax = items.reduce((sum, it) => sum + (it.quantity * it.rate * it.tax) / 100, 0);
+    return { subtotal, totalTax, total: subtotal + totalTax };
+  };
+
   if (data._id) {
-    // Update
     const id = new ObjectId(data._id);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { _id, ...toUpdate } = data;
+    const { _id, ...rest } = data;
+    const { subtotal, totalTax, total } = compute(rest.items);
     const result = await coll.findOneAndUpdate(
       { _id: id, userEmail: session.user.email },
-      { $set: { ...toUpdate, updatedAt: now } },
+      {
+        $set: {
+          ...rest,
+          subtotal,
+          totalTax,
+          total,
+          updatedAt: now
+        }
+      },
       { returnDocument: 'after' }
     );
     if (!result.value)
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    const updated = result.value;
-    return NextResponse.json({ ...updated, _id: updated._id.toString() });
+    const u = result.value;
+    return NextResponse.json({ 
+      _id: u._id.toString(),
+      ...rest,
+      subtotal,
+      totalTax,
+      total,
+      createdAt: u.createdAt,
+      updatedAt: u.updatedAt
+    });
   } else {
-    // Insert
-    const invoice = { ...data, userEmail: session.user.email, createdAt: now, updatedAt: now };
+    const { subtotal, totalTax, total } = compute(data.items);
+    const invoice = {
+      ...data,
+      userEmail: session.user.email,
+      subtotal,
+      totalTax,
+      total,
+      createdAt: now,
+      updatedAt: now
+    };
     const res = await coll.insertOne(invoice);
-    return NextResponse.json({ _id: res.insertedId.toString(), ...invoice });
+    return NextResponse.json({
+      _id: res.insertedId.toString(),
+      ...invoice
+    });
   }
 }

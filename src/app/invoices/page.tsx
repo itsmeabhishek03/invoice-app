@@ -1,3 +1,4 @@
+// src/app/invoices/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -16,8 +17,8 @@ export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
 
   useEffect(() => {
-    fetch('/api/invoices/list')
-      .then((res) => res.json())
+    fetch('/api/invoices')
+      .then(res => res.json())
       .then(setInvoices);
   }, []);
 
@@ -44,12 +45,12 @@ export default function InvoicesPage() {
             </tr>
           </thead>
           <tbody>
-            {invoices.map((inv) => (
+            {invoices.map(inv => (
               <tr key={inv._id} className="hover:bg-gray-50">
                 <td className="p-2">{inv.invoiceNumber}</td>
                 <td className="p-2">{inv.clientName}</td>
                 <td className="p-2 text-center">{inv.issueDate}</td>
-                <td className="p-2 text-right">{inv.total}</td>
+                <td className="p-2 text-right">{inv.total.toFixed(2)}</td>
                 <td className="p-2 text-center">
                   <Link href={`/invoices/${inv._id}/edit`} className="underline">
                     Edit
