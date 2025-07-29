@@ -11,6 +11,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head />
+      
       <script async src="https://cdn.tailwindcss.com"></script>
       <body>
         <Providers>
