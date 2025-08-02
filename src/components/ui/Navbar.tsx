@@ -1,3 +1,4 @@
+// components/ui/Navbar.tsx
 'use client';
 
 import Link from 'next/link';
@@ -5,9 +6,28 @@ import { Menu } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import Avatar from './Avatar';
 import { useProfile } from '@/components/ProfileContext';
+import { useSession, signIn, signOut } from 'next-auth/react';
+import { Button } from '@/components/ui/button';
 
 export default function Navbar() {
+  const { data: session, status } = useSession();
   const profile = useProfile();
+
+  if (status === 'loading') return null;
+
+  if (!session) {
+    return (
+      <nav className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          <span className="text-xl font-bold">InvoiceApp</span>
+          {/* Use signIn() instead of Link */}
+          <Button onClick={() => signIn()}>
+            Sign In
+          </Button>
+        </div>
+      </nav>
+    );
+  } 
 
   return (
     <nav className="bg-white shadow-sm">
@@ -28,13 +48,12 @@ export default function Navbar() {
         </Link>
 
         <div className="flex items-center gap-4">
-          {/* Point directly to the “new invoice” page */}
           <Link href="/invoices" className="hover:underline">
-           Invoices
-         </Link>
-         <Link href="/invoices/new" className="hover:underline">
-           + New Invoice
-         </Link>
+            Invoices
+          </Link>
+          <Link href="/invoices/new" className="hover:underline">
+            + New Invoice
+          </Link>
           <Link href="/settings" className="hover:underline">
             Settings
           </Link>
@@ -59,14 +78,14 @@ export default function Navbar() {
               </Menu.Item>
               <Menu.Item>
                 {({ active }) => (
-                  <Link
-                    href="/api/auth/signout"
-                    className={`block px-4 py-2 text-sm ${
+                  <button
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                    className={`w-full text-left px-4 py-2 text-sm ${
                       active ? 'bg-gray-100' : ''
                     }`}
                   >
                     Sign out
-                  </Link>
+                  </button>
                 )}
               </Menu.Item>
             </Menu.Items>

@@ -22,7 +22,7 @@ export default function ProfilePage() {
     <div className="p-8 space-y-4">
       <h1 className="text-2xl font-semibold">Your Profile</h1>
       <p><strong>Email:</strong> {session.user?.email}</p>
-      <p><strong>Name:</strong> {session.user?.name ?? '—'}</p>
+      {/* <p><strong>Address:</strong> {session.user?.address ?? '—'}</p> */}
       <Button variant="secondary" onClick={() => signOut()}>
         Sign Out
       </Button>
